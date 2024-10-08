@@ -173,6 +173,39 @@ public final class TurnSnapshot implements java.io.Serializable, IXmlSerializabl
 		}
 	}
 
+	// New method to handle writing robot snapshots
+    private void writeRobotSnapshots(XmlWriter writer, SerializableOptions options) throws IOException {
+        writer.startElement(options.shortAttributes ? "rs" : ROBOT); {
+            SerializableOptions op = options;
+
+            if (turn == 0) {
+                op = new SerializableOptions(options);
+                op.skipNames = false;
+            }
+            for (IRobotSnapshot r : robots) {
+                final RobotSnapshot rs = (RobotSnapshot) r;
+
+                if (!options.skipExploded || rs.getState() != RobotState.DEAD) {
+                    rs.writeXml(writer, op);
+                } else {
+                    boolean writeFirstExplosionFrame = false;
+
+                    for (IBulletSnapshot b : bullets) {
+                        if (b.isExplosion() && b.getFrame() == 0 && b.getVictimIndex() == r.getRobotIndex()) {
+                            writeFirstExplosionFrame = true;
+                            break;
+                        }
+                    }
+                    if (writeFirstExplosionFrame) {
+                        rs.writeXml(writer, op);
+                    }
+                }
+            }
+        }
+        writer.endElement();
+    }
+
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -184,34 +217,36 @@ public final class TurnSnapshot implements java.io.Serializable, IXmlSerializabl
 				writer.writeAttribute("ver", serialVersionUID);
 			}
 
-			writer.startElement(options.shortAttributes ? "rs" :ROBOT); {
-				SerializableOptions op = options;
+			writeRobotSnapshots(writer, options);
 
-				if (turn == 0) {
-					op = new SerializableOptions(options);
-					op.skipNames = false;
-				}
-				for (IRobotSnapshot r : robots) {
-					final RobotSnapshot rs = (RobotSnapshot) r;
+			// writer.startElement(options.shortAttributes ? "rs" :ROBOT); {
+			// 	SerializableOptions op = options;
 
-					if (!options.skipExploded || rs.getState() != RobotState.DEAD) {
-						rs.writeXml(writer, op);
-					} else {
-						boolean writeFirstExplosionFrame = false;
+			// 	if (turn == 0) {
+			// 		op = new SerializableOptions(options);
+			// 		op.skipNames = false;
+			// 	}
+			// 	for (IRobotSnapshot r : robots) {
+			// 		final RobotSnapshot rs = (RobotSnapshot) r;
 
-						for (IBulletSnapshot b : bullets) {
-							if (b.isExplosion() && b.getFrame() == 0 && b.getVictimIndex() == r.getRobotIndex()) {
-								writeFirstExplosionFrame = true;
-								break;
-							}
-						}
-						if (writeFirstExplosionFrame) {
-							rs.writeXml(writer, op);
-						}
-					}
-				}
-			}
-			writer.endElement();
+			// 		if (!options.skipExploded || rs.getState() != RobotState.DEAD) {
+			// 			rs.writeXml(writer, op);
+			// 		} else {
+			// 			boolean writeFirstExplosionFrame = false;
+
+			// 			for (IBulletSnapshot b : bullets) {
+			// 				if (b.isExplosion() && b.getFrame() == 0 && b.getVictimIndex() == r.getRobotIndex()) {
+			// 					writeFirstExplosionFrame = true;
+			// 					break;
+			// 				}
+			// 			}
+			// 			if (writeFirstExplosionFrame) {
+			// 				rs.writeXml(writer, op);
+			// 			}
+			// 		}
+			// 	}
+			// }
+			// writer.endElement();
 
 			writer.startElement(options.shortAttributes ? "bs" : "bullets"); {
 				for (IBulletSnapshot b : bullets) {
