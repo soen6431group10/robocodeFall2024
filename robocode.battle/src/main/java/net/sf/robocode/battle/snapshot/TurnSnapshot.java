@@ -34,9 +34,6 @@ public final class TurnSnapshot implements java.io.Serializable, IXmlSerializabl
 
 	private static final long serialVersionUID = 1L;
 
-	
-    /** Constant for robots element name */
-	private static final String ROBOT = "robots";
 	/** List of snapshots for the robots participating in the battle */
 	private List<IRobotSnapshot> robots;
 
@@ -173,39 +170,6 @@ public final class TurnSnapshot implements java.io.Serializable, IXmlSerializabl
 		}
 	}
 
-	// New method to handle writing robot snapshots
-    private void writeRobotSnapshots(XmlWriter writer, SerializableOptions options) throws IOException {
-        writer.startElement(options.shortAttributes ? "rs" : ROBOT); {
-            SerializableOptions op = options;
-
-            if (turn == 0) {
-                op = new SerializableOptions(options);
-                op.skipNames = false;
-            }
-            for (IRobotSnapshot r : robots) {
-                final RobotSnapshot rs = (RobotSnapshot) r;
-
-                if (!options.skipExploded || rs.getState() != RobotState.DEAD) {
-                    rs.writeXml(writer, op);
-                } else {
-                    boolean writeFirstExplosionFrame = false;
-
-                    for (IBulletSnapshot b : bullets) {
-                        if (b.isExplosion() && b.getFrame() == 0 && b.getVictimIndex() == r.getRobotIndex()) {
-                            writeFirstExplosionFrame = true;
-                            break;
-                        }
-                    }
-                    if (writeFirstExplosionFrame) {
-                        rs.writeXml(writer, op);
-                    }
-                }
-            }
-        }
-        writer.endElement();
-    }
-
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -217,36 +181,34 @@ public final class TurnSnapshot implements java.io.Serializable, IXmlSerializabl
 				writer.writeAttribute("ver", serialVersionUID);
 			}
 
-			writeRobotSnapshots(writer, options);
+			writer.startElement(options.shortAttributes ? "rs" : "robots"); {
+				SerializableOptions op = options;
 
-			// writer.startElement(options.shortAttributes ? "rs" :ROBOT); {
-			// 	SerializableOptions op = options;
+				if (turn == 0) {
+					op = new SerializableOptions(options);
+					op.skipNames = false;
+				}
+				for (IRobotSnapshot r : robots) {
+					final RobotSnapshot rs = (RobotSnapshot) r;
 
-			// 	if (turn == 0) {
-			// 		op = new SerializableOptions(options);
-			// 		op.skipNames = false;
-			// 	}
-			// 	for (IRobotSnapshot r : robots) {
-			// 		final RobotSnapshot rs = (RobotSnapshot) r;
+					if (!options.skipExploded || rs.getState() != RobotState.DEAD) {
+						rs.writeXml(writer, op);
+					} else {
+						boolean writeFirstExplosionFrame = false;
 
-			// 		if (!options.skipExploded || rs.getState() != RobotState.DEAD) {
-			// 			rs.writeXml(writer, op);
-			// 		} else {
-			// 			boolean writeFirstExplosionFrame = false;
-
-			// 			for (IBulletSnapshot b : bullets) {
-			// 				if (b.isExplosion() && b.getFrame() == 0 && b.getVictimIndex() == r.getRobotIndex()) {
-			// 					writeFirstExplosionFrame = true;
-			// 					break;
-			// 				}
-			// 			}
-			// 			if (writeFirstExplosionFrame) {
-			// 				rs.writeXml(writer, op);
-			// 			}
-			// 		}
-			// 	}
-			// }
-			// writer.endElement();
+						for (IBulletSnapshot b : bullets) {
+							if (b.isExplosion() && b.getFrame() == 0 && b.getVictimIndex() == r.getRobotIndex()) {
+								writeFirstExplosionFrame = true;
+								break;
+							}
+						}
+						if (writeFirstExplosionFrame) {
+							rs.writeXml(writer, op);
+						}
+					}
+				}
+			}
+			writer.endElement();
 
 			writer.startElement(options.shortAttributes ? "bs" : "bullets"); {
 				for (IBulletSnapshot b : bullets) {
@@ -284,7 +246,7 @@ public final class TurnSnapshot implements java.io.Serializable, IXmlSerializabl
 					}
 				});
 
-				reader.expect(ROBOT, "rs", new XmlReader.ListElement() {
+				reader.expect("robots", "rs", new XmlReader.ListElement() {
 					public IXmlSerializable read(XmlReader reader) {
 						snapshot.robots = new ArrayList<IRobotSnapshot>();
 						// prototype
@@ -298,7 +260,7 @@ public final class TurnSnapshot implements java.io.Serializable, IXmlSerializabl
 					public void close() {
 						// allows loading of minimalistic XML, which skips dead robots, but GUI expects them
 						Map<String, Object> context = reader.getContext();
-						Integer robotCount = (Integer) context.get(ROBOT);
+						Integer robotCount = (Integer) context.get("robots");
 						boolean[] present = new boolean[robotCount];
 
 						for (IRobotSnapshot robot : snapshot.robots) {
