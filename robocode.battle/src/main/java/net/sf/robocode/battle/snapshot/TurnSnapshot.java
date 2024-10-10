@@ -34,7 +34,12 @@ public final class TurnSnapshot implements java.io.Serializable, IXmlSerializabl
 
 	private static final long serialVersionUID = 1L;
 
+<<<<<<< HEAD
 	private static final String  ROBOTS_XML_ELEMENT_NAME = "robots";
+=======
+	/** Define a constant for the "robots" literal */
+	private static final String ROBOTS_XML_ELEMENT_NAME = "robots";
+>>>>>>> aa37537f5d1dd98de032032ff84f210721a00c0e
 
 	/** List of snapshots for the robots participating in the battle */
 	private List<IRobotSnapshot> robots;
