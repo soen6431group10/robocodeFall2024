@@ -395,12 +395,10 @@ public final class Battle extends BaseBattle {
 	@Override
 	protected void shutdownTurn() {
 		if (endTimer == 0) {
-      
 			handleEndOfBattle();
-    }
-		
+                }
 		if (endTimer > 4 * TURNS_DISPLAYED_AFTER_ENDING) {
-		haltAllRobots();
+			haltAllRobots();
 		}
 
 		super.shutdownTurn();
