@@ -755,18 +755,19 @@ public final class Battle extends BaseBattle {
 			int len = coords.length;
 
 			if (len >= 1 && coords[0].trim().length() > 0) {
+				String replacePattern = "[^0-9.]";
 				try {
-					x = Double.parseDouble(coords[0].replaceAll("[^0-9.]", ""));
+					x = Double.parseDouble(coords[0].replaceAll(replacePattern, ""));
 				} catch (NumberFormatException ignore) {// Could be the '?', which is fine
 				}
 				if (len >= 2 && coords[1].trim().length() > 0) {
 					try {
-						y = Double.parseDouble(coords[1].replaceAll("[^0-9.]", ""));
+						y = Double.parseDouble(coords[1].replaceAll(replacePattern, ""));
 					} catch (NumberFormatException ignore) {// Could be the '?', which is fine
 					}
 					if (len >= 3 && coords[2].trim().length() > 0) {
 						try {
-							heading = Math.toRadians(Double.parseDouble(coords[2].replaceAll("[^0-9.]", "")));
+							heading = Math.toRadians(Double.parseDouble(coords[2].replaceAll(replacePattern, "")));
 						} catch (NumberFormatException ignore) {// Could be the '?', which is fine
 						}
 					}
